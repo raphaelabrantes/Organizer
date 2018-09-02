@@ -15,8 +15,8 @@ for line in lines:
         if line[-1].lower != "g" or "." not in line:
             pass
         else:
-            file.append("%s%s"%(path,line))
-for i in file:
+            files.append("%s%s"%(path,line))
+for i in files:
     print(i)
 
     
