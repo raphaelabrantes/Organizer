@@ -14,7 +14,7 @@ for line in lines:
     else:
         if line[-1].lower != "g" or "." not in line:
             pass
-        else:
+        elif line=[-1].lower == "g" or "." in line:
             files.append("%s%s"%(path,line))
 for i in files:
     print(i)
