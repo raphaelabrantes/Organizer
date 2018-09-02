@@ -1,6 +1,6 @@
 import os
 os.system("ls -R > nomescorretos.txt")
-with open("nomescorretos.txt", "w") as filename:
+with open("nomescorretos.txt", "r") as filename:
     lines = filename.readlines()
 
 files = []
