@@ -2,7 +2,7 @@ import os, time, shutil
 
 
 class Organizer:
-    def __init__(self,base, new_path= ""):
+    def __init__(self, base, new_path=""):
         self.path = base
         self.new_path = new_path
         self.directory = self.getDictories()
@@ -12,6 +12,7 @@ class Organizer:
         return len(self.files)
 
     def getDictories(self):
+        print("Getting all diretorys")
         directory = []
         list_all = [self.path]
         for elemento in list_all:
@@ -19,12 +20,16 @@ class Organizer:
                 directory.append(elemento)
                 for inside in os.listdir(elemento):
                     list_all.append(elemento + inside + "/")
+        print("Done")
         return directory
 
     def getFiles(self, nots= None, musts=None):
-        files = [str + file for str in self.directory for file in os.listdir(str) if os.path.isfile(str + file)]
+        print("Getting all Files")
+        files = [string + file for string in self.directory for file in os.listdir(string) if os.path.isfile(string + file)]
+        print("Done")
         for file in files:
-            if self.verifyPatern(file,nots, musts):
+            if self.verifyPatern(file, nots, musts):
+                #print("Matching pattern: ", file)
                 self.files.append(file)
 
     def verifyPatern(self, file, nots =None, musts=None):
@@ -64,26 +69,26 @@ class Organizer:
 
     # organiza paths
     def organize(self):
+        print("Organizando Arquivos")
+        contador = 0
         dict_compare = {}
         for i in self.files:
+            contador += 1
             x = os.stat(i)
+            size = x.st_size
             tempo = time.localtime(x.st_mtime)
             month = str(tempo.tm_mon)
             year = str(tempo.tm_year)
-            hour = str(tempo.tm_hour)
-            minute = str(tempo.tm_min)
-            second = str(tempo.tm_sec)
+            #hour = str(tempo.tm_hour)
+            #minute = str(tempo.tm_min)
+            #second = str(tempo.tm_sec)
             repartition = i.rpartition("/")[-1]
-            path = "%s/%s-%s/%s" %(self.new_path, year, month, repartition)
+            path = "%s/%s-%s/%s" % (self.new_path, year, month, repartition)
             if path in dict_compare.keys():
-                if hour < dict_compare[path][1]:
-                    dict_compare[path] = [i, hour, minute, second]
-                elif hour == dict_compare[path][1] and minute < dict_compare[path][2]:
-                    dict_compare[path] = [i, hour, minute, second]
-                elif hour == dict_compare[path][1] and minute == dict_compare[path][2] and second < dict_compare[path][3]:
-                    dict_compare[path] = [i, hour, minute, second]
+                if size > dict_compare[path][1]:
+                    dict_compare[path] = [i, size]
             else:
-                dict_compare[path] = [i, hour, minute, second]
+                dict_compare[path] = [i, size]
 
         return dict_compare
 
@@ -91,11 +96,16 @@ class Organizer:
     def moveEm(self):
         new_paths = self.organize()
         self.generateDirectories(new_paths)
+        contador = 0
+        size = len(new_paths)
         for key, value in new_paths.items():
-            print("Moving %s"%(value[0]))
+            print("Moving %s" % (value[0]))
             shutil.copy2(value[0], key)
+            contador += 1
+            print("%.2f Done" % ((contador/size) * 100))
 
     def generateDirectories(self, path):
+        print("Criando diretorios")
         for new in path.keys():
             direct = new[:new.find("/", new.find("/") + 1) + 1]
             os.makedirs(direct, exist_ok=True)
