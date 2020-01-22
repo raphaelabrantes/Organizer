@@ -1,9 +1,11 @@
 import os, time, shutil
+from PIL import Image
 
 
 class Organizer:
-    def __init__(self, base, new_path=""):
+    def __init__(self, base, new_path="", mod_path=""):
         self.path = base
+        self.mod_path = mod_path
         self.new_path = new_path
         self.directory = self.getDictories()
         self.files = []
@@ -29,17 +31,9 @@ class Organizer:
         print("Done")
         for file in files:
             if self.verifyPatern(file, nots, musts):
-                #print("Matching pattern: ", file)
                 self.files.append(file)
 
     def verifyPatern(self, file, nots =None, musts=None):
-        """
-                Verifica se o arquivo esta de acordo com as regras ditadas pelo usuario
-                A variavel nots é uma lista de coisas que o arquivo nao pode conter no nome,
-                A variavel musts é uma lista de coisas que o arquivo pode conter (deve conter pelo menos uma)
-                retorna True ou False dependendo das comparacoes
-
-        """
         if nots is None and musts is None:
             return True
 
@@ -69,26 +63,33 @@ class Organizer:
 
     # organiza paths
     def organize(self):
-        print("Organizando Arquivos")
-        contador = 0
+        print("Organizing Files")
+        contador = 100
         dict_compare = {}
         for i in self.files:
-            contador += 1
-            x = os.stat(i)
-            size = x.st_size
-            tempo = time.localtime(x.st_mtime)
-            month = str(tempo.tm_mon)
-            year = str(tempo.tm_year)
-            #hour = str(tempo.tm_hour)
-            #minute = str(tempo.tm_min)
-            #second = str(tempo.tm_sec)
+            try:
+                image = Image.open(i)._getexif()[36867]
+                split = image.split(":")
+                year = split[0]
+                month = split[1]
+                new_path = self.new_path
+                print("NEW TAKEN", end="-\t\t")
+            except(KeyError, OSError, TypeError, IndexError):
+                print("NO TAKEN DATE", end="-\t\t")
+                x = os.stat(i)
+                tempo = time.localtime(x.st_mtime)
+                month = str(tempo.tm_mon)
+                year = str(tempo.tm_year)
+                new_path = self.mod_path
             repartition = i.rpartition("/")[-1]
-            path = "%s/%s-%s/%s" % (self.new_path, year, month, repartition)
+            path = "%s/%s-%s/%s" % (new_path, year, month, repartition)
+            print(path)
             if path in dict_compare.keys():
-                if size > dict_compare[path][1]:
-                    dict_compare[path] = [i, size]
-            else:
-                dict_compare[path] = [i, size]
+                ponto = path.find(".")
+                path = path[:ponto] + str(contador) + path[ponto:]
+                contador += 1
+
+            dict_compare[path] = i
 
         return dict_compare
 
@@ -99,17 +100,17 @@ class Organizer:
         contador = 0
         size = len(new_paths)
         for key, value in new_paths.items():
-            print("Moving %s" % (value[0]))
-            shutil.copy2(value[0], key)
+            print("Moving %s" % (value))
+            shutil.copy2(value, key)
             contador += 1
-            print("%.2f Done" % ((contador/size) * 100))
+            print("%.2f Done" % ((contador/size) * 100))                                                                                                                                                
 
     def generateDirectories(self, path):
-        print("Criando diretorios")
+        print("Creating Directories")
         for new in path.keys():
             direct = new[:new.find("/", new.find("/") + 1) + 1]
             os.makedirs(direct, exist_ok=True)
-
+            print("%s created" % direct)
 
 
 
