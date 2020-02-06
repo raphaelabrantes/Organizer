@@ -1,5 +1,5 @@
-# Photo organizer.
+# File date organizer.
 
-Organizes photos in a Folder of photos by taken date, also by some parameters.
+Organizes files in a Folder of photos by taken date, or modified date, also by some parameters.
 #### Example of usage in "clean.py"
 
